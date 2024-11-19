@@ -47,6 +47,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "artifact_bucket_lifecycle" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "allow_public_access" {
+  bucket = aws_s3_bucket.artifact_bucket.id
+}
+
 data "aws_iam_policy_document" "bucket_policy_doc" {
   statement {
     sid       = "PublicReadGetObject"
@@ -63,6 +67,8 @@ data "aws_iam_policy_document" "bucket_policy_doc" {
 resource "aws_s3_bucket_policy" "artifact_bucket_policy" {
   bucket = aws_s3_bucket.artifact_bucket.bucket
   policy = data.aws_iam_policy_document.bucket_policy_doc.json
+
+  depends_on = [aws_s3_bucket_public_access_block.allow_public_access]
 }
 
 resource "aws_s3_bucket_website_configuration" "artifact_bucket_website_config" {
