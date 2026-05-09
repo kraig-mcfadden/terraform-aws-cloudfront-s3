@@ -1,5 +1,10 @@
 # terraform-aws-cloudfront-s3
-Creates a Cloudfront distro and an S3 static website bucket as the origin
+Creates a CloudFront distribution backed by an S3 bucket. Supports two modes:
+
+- `mode = "website"` (default): S3 static website hosting — public bucket, `index.html` resolution, CloudFront fronts the website endpoint via `custom_origin_config`.
+- `mode = "object"`: raw S3 object serving — private bucket, CloudFront reads via Origin Access Control (OAC). Use this when you want to serve user-uploaded files (e.g. images written via presigned PUT URLs) and don't need website-style path resolution.
+
+Cache TTLs (`min_ttl` / `default_ttl` / `max_ttl`) are configurable; defaults match the previous hard-coded values (0 / 3600 / 86400).
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -24,6 +29,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [aws_cloudfront_distribution.distro](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) | resource |
+| [aws_cloudfront_origin_access_control.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_control) | resource |
 | [aws_route53_record.cloudfront_alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_s3_bucket.artifact_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_lifecycle_configuration.artifact_bucket_lifecycle](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration) | resource |
@@ -32,7 +38,8 @@ No modules.
 | [aws_s3_bucket_server_side_encryption_configuration.artifact_bucket_sse](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration) | resource |
 | [aws_s3_bucket_versioning.artifact_bucket_versioning](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning) | resource |
 | [aws_s3_bucket_website_configuration.artifact_bucket_website_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_website_configuration) | resource |
-| [aws_iam_policy_document.bucket_policy_doc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.oac_bucket_policy_doc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.website_bucket_policy_doc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
 ## Inputs
 
@@ -40,12 +47,19 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_acm_cert_arn"></a> [acm\_cert\_arn](#input\_acm\_cert\_arn) | ACM cert for the CF aliases | `string` | n/a | yes |
 | <a name="input_aliases"></a> [aliases](#input\_aliases) | Aliases for the Cloudfront distro | `set(string)` | n/a | yes |
+| <a name="input_default_ttl"></a> [default\_ttl](#input\_default\_ttl) | CloudFront default cache behavior default TTL (seconds) | `number` | `3600` | no |
 | <a name="input_hosted_zone_id"></a> [hosted\_zone\_id](#input\_hosted\_zone\_id) | Id of the hosted zone to create the aliases in | `string` | n/a | yes |
+| <a name="input_max_ttl"></a> [max\_ttl](#input\_max\_ttl) | CloudFront default cache behavior max TTL (seconds) | `number` | `86400` | no |
+| <a name="input_min_ttl"></a> [min\_ttl](#input\_min\_ttl) | CloudFront default cache behavior min TTL (seconds) | `number` | `0` | no |
+| <a name="input_mode"></a> [mode](#input\_mode) | "website" hosts a static site (S3 website endpoint, public bucket policy, index.html resolution). "object" serves raw S3 objects via CloudFront with an OAC and a private bucket. | `string` | `"website"` | no |
 | <a name="input_name"></a> [name](#input\_name) | What to call the CF distro and S3 bucket | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_bucket_arn"></a> [bucket\_arn](#output\_bucket\_arn) | n/a |
+| <a name="output_bucket_arn"></a> [bucket\_arn](#output\_bucket\_arn) | ARN of the artifact bucket |
+| <a name="output_bucket_id"></a> [bucket\_id](#output\_bucket\_id) | Name of the artifact bucket — useful for attaching extra config (CORS, IAM policies for presigned uploads) |
+| <a name="output_distribution_domain_name"></a> [distribution\_domain\_name](#output\_distribution\_domain\_name) | CloudFront distribution domain name (e.g. d111111abcdef8.cloudfront.net) |
+| <a name="output_distribution_id"></a> [distribution\_id](#output\_distribution\_id) | CloudFront distribution ID |
 <!-- END_TF_DOCS -->
