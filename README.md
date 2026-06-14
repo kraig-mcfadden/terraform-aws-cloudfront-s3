@@ -18,7 +18,7 @@ Cache TTLs (`min_ttl` / `default_ttl` / `max_ttl`) are configurable; defaults ma
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.50.0 |
 
 ## Modules
 
@@ -32,6 +32,7 @@ No modules.
 | [aws_cloudfront_origin_access_control.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_control) | resource |
 | [aws_route53_record.cloudfront_alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_s3_bucket.artifact_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
+| [aws_s3_bucket_cors_configuration.artifact_bucket_cors](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_cors_configuration) | resource |
 | [aws_s3_bucket_lifecycle_configuration.artifact_bucket_lifecycle](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration) | resource |
 | [aws_s3_bucket_policy.artifact_bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_public_access_block.allow_public_access](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
@@ -47,11 +48,12 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_acm_cert_arn"></a> [acm\_cert\_arn](#input\_acm\_cert\_arn) | ACM cert for the CF aliases | `string` | n/a | yes |
 | <a name="input_aliases"></a> [aliases](#input\_aliases) | Aliases for the Cloudfront distro | `set(string)` | n/a | yes |
+| <a name="input_cors"></a> [cors](#input\_cors) | Optional S3 bucket CORS rule. Leave null to skip CORS configuration (default; existing callers don't need to change). When set, an aws\_s3\_bucket\_cors\_configuration is attached with the supplied origins/methods plus the optional headers and max-age. | <pre>object({<br/>    allowed_origins = list(string)<br/>    allowed_methods = list(string)<br/>    allowed_headers = optional(list(string), [])<br/>    expose_headers  = optional(list(string), [])<br/>    max_age_seconds = optional(number, 3000)<br/>  })</pre> | `null` | no |
 | <a name="input_default_ttl"></a> [default\_ttl](#input\_default\_ttl) | CloudFront default cache behavior default TTL (seconds) | `number` | `3600` | no |
 | <a name="input_hosted_zone_id"></a> [hosted\_zone\_id](#input\_hosted\_zone\_id) | Id of the hosted zone to create the aliases in | `string` | n/a | yes |
 | <a name="input_max_ttl"></a> [max\_ttl](#input\_max\_ttl) | CloudFront default cache behavior max TTL (seconds) | `number` | `86400` | no |
 | <a name="input_min_ttl"></a> [min\_ttl](#input\_min\_ttl) | CloudFront default cache behavior min TTL (seconds) | `number` | `0` | no |
-| <a name="input_mode"></a> [mode](#input\_mode) | "website" hosts a static site (S3 website endpoint, public bucket policy, index.html resolution). "object" serves raw S3 objects via CloudFront with an OAC and a private bucket. | `string` | `"website"` | no |
+| <a name="input_mode"></a> [mode](#input\_mode) | "website" hosts a static site (S3 website endpoint, public bucket policy, index.html resolution). "object" serves raw S3 objects via CloudFront with an OAC and a private bucket. | `string` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | What to call the CF distro and S3 bucket | `string` | n/a | yes |
 
 ## Outputs

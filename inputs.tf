@@ -45,3 +45,15 @@ variable "max_ttl" {
   default     = 86400
   description = "CloudFront default cache behavior max TTL (seconds)"
 }
+
+variable "cors" {
+  type = object({
+    allowed_origins = list(string)
+    allowed_methods = list(string)
+    allowed_headers = optional(list(string), [])
+    expose_headers  = optional(list(string), [])
+    max_age_seconds = optional(number, 3000)
+  })
+  default     = null
+  description = "Optional S3 bucket CORS rule. Leave null to skip CORS configuration (default; existing callers don't need to change). When set, an aws_s3_bucket_cors_configuration is attached with the supplied origins/methods plus the optional headers and max-age."
+}
