@@ -56,4 +56,12 @@ variable "cors" {
   })
   default     = null
   description = "Optional S3 bucket CORS rule. Leave null to skip CORS configuration (default; existing callers don't need to change). When set, an aws_s3_bucket_cors_configuration is attached with the supplied origins/methods plus the optional headers and max-age."
+
+  validation {
+    condition = var.cors == null || alltrue([
+      for m in(var.cors == null ? [] : var.cors.allowed_methods) :
+      contains(["GET", "PUT", "POST", "DELETE", "HEAD"], m)
+    ])
+    error_message = "cors.allowed_methods may only contain GET, PUT, POST, DELETE, or HEAD."
+  }
 }
