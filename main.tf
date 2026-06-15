@@ -61,6 +61,20 @@ resource "aws_s3_bucket_public_access_block" "allow_public_access" {
   restrict_public_buckets = !local.is_website
 }
 
+resource "aws_s3_bucket_cors_configuration" "artifact_bucket_cors" {
+  count = var.cors == null ? 0 : 1
+
+  bucket = aws_s3_bucket.artifact_bucket.id
+
+  cors_rule {
+    allowed_origins = var.cors.allowed_origins
+    allowed_methods = var.cors.allowed_methods
+    allowed_headers = var.cors.allowed_headers
+    expose_headers  = var.cors.expose_headers
+    max_age_seconds = var.cors.max_age_seconds
+  }
+}
+
 data "aws_iam_policy_document" "website_bucket_policy_doc" {
   count = local.is_website ? 1 : 0
 
